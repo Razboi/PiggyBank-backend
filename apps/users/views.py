@@ -1,5 +1,5 @@
 from rest_framework import generics, mixins
-from .models import User
+from .models import Account
 from .serializers import UserSerializer
 
 
@@ -9,7 +9,7 @@ class UsersCreateView(mixins.CreateModelMixin, generics.ListAPIView):
     # queryset = User.objects.all()
 
     def get_queryset(self):
-        qs = User.objects.all()
+        qs = Account.objects.all()
         query = self.request.GET.get("q")
         if query is not None:
             qs = qs.filter(name__icontains=query).distinct()
@@ -29,4 +29,4 @@ class UsersRUDView(generics.RetrieveUpdateDestroyAPIView):
     # queryset = User.objects.all()
 
     def get_queryset(self):
-        return User.objects.all()
+        return Account.objects.all()
