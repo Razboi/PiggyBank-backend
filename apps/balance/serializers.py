@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Transaction
+from .models import Transaction, Balance
 
 class TransactionSerializer(serializers.ModelSerializer):
     class Meta:
@@ -8,6 +8,7 @@ class TransactionSerializer(serializers.ModelSerializer):
         "balance",
         "date",
         "description",
-        "amount"
+        "amount",
+        "transaction_balance"
         ]
         read_only_fields = ["balance"]
