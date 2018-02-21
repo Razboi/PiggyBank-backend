@@ -9,6 +9,9 @@ class TransactionSerializer(serializers.ModelSerializer):
         "date",
         "description",
         "amount",
-        "transaction_balance"
+        "currentTotal"
         ]
         read_only_fields = ["balance"]
+
+class CurrentBalanceSerializer(serializers.Serializer):
+    totalBalance = serializers.DecimalField(decimal_places=2, max_digits=20)

@@ -1,5 +1,8 @@
-from rest_framework import generics, mixins
-from .serializers import TransactionSerializer
+from rest_framework import generics, mixins, authentication, permissions
+from rest_framework.views import APIView
+from rest_framework.renderers import JSONRenderer
+from rest_framework.response import Response
+from .serializers import TransactionSerializer, CurrentBalanceSerializer
 from .models import Transaction, Balance
 from ..users.models import Account
 from rest_framework.fields import CurrentUserDefault
@@ -22,3 +25,11 @@ class TransactionsCreateView(mixins.CreateModelMixin, generics.ListAPIView):
 # using mixins to add the post method on the listAPIview
     def post(self, request, *args, **kwargs):
         return self.create(request, *args, **kwargs)
+
+class BalanceRetrieveView(APIView):
+    permission_classes = (permissions.IsAuthenticated,)
+    def get(self, request):
+        account = Account.objects.get(user=request.user)
+        balance = Balance.objects.get(user=account)
+        serializer = CurrentBalanceSerializer(balance)
+        return Response(serializer.data)
