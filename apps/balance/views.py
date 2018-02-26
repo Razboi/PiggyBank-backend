@@ -6,6 +6,23 @@ from .serializers import TransactionSerializer, CurrentBalanceSerializer
 from .models import Transaction, Balance
 from ..users.models import Account
 from rest_framework.fields import CurrentUserDefault
+from django.http import HttpResponse
+import json
+
+
+class CreateTransaction(APIView):
+    permission_classes = (permissions.IsAuthenticated,)
+
+    def post(self, request):
+        account = Account.objects.get(user=request.user)
+        balance = Balance.objects.get(user=account)
+        new_transaction = Transaction(
+        balance=balance,
+        description=request.data["description"],
+        amount=request.data["amount"]
+        )
+        new_transaction.save()
+        return HttpResponse(new_transaction)
 
 class AllTransactionsView(generics.ListAPIView):
     lookup_field = "pk"
@@ -17,7 +34,7 @@ class AllTransactionsView(generics.ListAPIView):
         qs = Transaction.objects.filter(balance=balance).order_by("-date")
         return qs
 
-class TransactionsCreateView(mixins.CreateModelMixin, generics.ListAPIView):
+class TransactionsCreateView(generics.ListAPIView):
     lookup_field = "pk"
     serializer_class = TransactionSerializer
 
@@ -26,15 +43,6 @@ class TransactionsCreateView(mixins.CreateModelMixin, generics.ListAPIView):
         balance = Balance.objects.get(user=account)
         qs = Transaction.objects.filter(balance=balance).order_by("-date")[:10]
         return qs
-
-    def perform_create(self, serializer):
-        account = Account.objects.get(user=self.request.user)
-        balance = Balance.objects.get(user=account)
-        serializer.save(balance=balance)
-
-# using mixins to add the post method on the listAPIview
-    def post(self, request, *args, **kwargs):
-        return self.create(request, *args, **kwargs)
 
 class BalanceRetrieveView(APIView):
     permission_classes = (permissions.IsAuthenticated,)
