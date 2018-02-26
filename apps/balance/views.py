@@ -7,6 +7,16 @@ from .models import Transaction, Balance
 from ..users.models import Account
 from rest_framework.fields import CurrentUserDefault
 
+class AllTransactionsView(generics.ListAPIView):
+    lookup_field = "pk"
+    serializer_class = TransactionSerializer
+
+    def get_queryset(self):
+        account = Account.objects.get(user=self.request.user)
+        balance = Balance.objects.get(user=account)
+        qs = Transaction.objects.filter(balance=balance).order_by("-date")
+        return qs
+
 class TransactionsCreateView(mixins.CreateModelMixin, generics.ListAPIView):
     lookup_field = "pk"
     serializer_class = TransactionSerializer
@@ -14,7 +24,7 @@ class TransactionsCreateView(mixins.CreateModelMixin, generics.ListAPIView):
     def get_queryset(self):
         account = Account.objects.get(user=self.request.user)
         balance = Balance.objects.get(user=account)
-        qs = Transaction.objects.filter(balance=balance)
+        qs = Transaction.objects.filter(balance=balance).order_by("-date")[:10]
         return qs
 
     def perform_create(self, serializer):
