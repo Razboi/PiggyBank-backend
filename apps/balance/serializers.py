@@ -9,7 +9,8 @@ class TransactionSerializer(serializers.ModelSerializer):
         "date",
         "description",
         "amount",
-        "currentTotal"
+        "currentTotal",
+        "pk"
         ]
         read_only_fields = ["balance"]
 

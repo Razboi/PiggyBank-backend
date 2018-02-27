@@ -24,6 +24,33 @@ class CreateTransaction(APIView):
         new_transaction.save()
         return HttpResponse(new_transaction)
 
+class UpdateTransaction(APIView):
+    permission_classes = (permissions.IsAuthenticated,)
+
+    def put(self, request):
+        transaction = Transaction.objects.get(pk=request.data["pk"])
+        balance = Balance.objects.get(pk=transaction.balance.pk)
+        # if the amount has changed undo the changes to the balance
+        if transaction.amount != request.data["amount"]:
+            # if the old amount was negative make it positive and add it
+            if transaction.amount < 0:
+                balance.totalBalance += -transaction.amount
+                balance.save()
+            # else substract it
+            else:
+                balance.totalBalance -= transaction.amount
+            # then add the new amount
+            balance.totalBalance += request.data["amount"]
+            balance.save()
+
+        # Using update() instead of save() avoids triggering the post_save method
+        Transaction.objects.filter(pk=request.data["pk"]).update(
+            description=request.data["description"],
+            amount=request.data["amount"]
+        )
+
+        return HttpResponse(transaction)
+
 class AllTransactionsView(generics.ListAPIView):
     lookup_field = "pk"
     serializer_class = TransactionSerializer
